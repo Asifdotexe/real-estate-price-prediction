@@ -1,6 +1,7 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    background-image: url('background.jpg'); /* Add the path to your background image */
+    background-size: cover;
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,7 +11,7 @@ body {
 }
 
 .container {
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.8); /* Add a semi-transparent white background */
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -22,12 +23,6 @@ body {
     background-color: #3498db; /* Blue color, you can change this */
     border-radius: 8px 8px 0 0;
 }
-
-.form {
-    text-align: left;
-    margin-top: 20px;
-}
-
 h2 {
     margin-top: 10px;
     margin-bottom: 5px;
