@@ -19,7 +19,7 @@ def get_locations():
     return response
 
 # Endpoint for predicting home price
-@app.route('/predict_home_price', methods=['GET', 'POST'])
+@app.route('/predict_home_price', methods=['POST'])
 def predict_home_price():
     # Extracting input parameters from the request form
     total_sqft = float(request.form['total_sqft'])
