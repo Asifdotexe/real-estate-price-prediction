@@ -88,3 +88,43 @@ def plot_confusion_matrix(y_true, y_pred, labels=None):
     cm_display.plot()
 
     plt.show()
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import cross_val_score, ShuffleSplit
+from sklearn.linear_model import LinearRegression
+
+def visualize_cross_validation(model, X, y, n_splits=10, test_size=0.2, random_state=0):
+    """
+    Visualize cross-validation scores for a given model using a boxplot.
+
+    Parameters:
+    - model: The machine learning model to evaluate.
+    - X: The feature matrix.
+    - y: The target variable.
+    - n_splits: Number of shuffle splits in cross-validation.
+    - test_size: Proportion of the dataset to include in the test split.
+    - random_state: Seed for reproducibility.
+
+    Returns:
+    - None (Displays boxplot and prints summary statistics).
+    """
+    # Creating a ShuffleSplit object
+    cross_validation = ShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=random_state)
+
+    # Performing cross-validation and getting the scores
+    cv_scores = cross_val_score(model, X, y, cv=cross_validation)
+
+    # Displaying summary statistics
+    print(f'We ran {n_splits} shuffle splits')
+    print('Minimum cross-validation score is', min(cv_scores))
+    print('Mean cross-validation score is', cv_scores.mean())
+    print('Maximum cross-validation score is', max(cv_scores))
+
+    # Creating a boxplot to visualize the cross-validation scores
+    plt.figure(figsize=(8, 6))
+    sns.boxplot(x=cv_scores)
+    plt.title(f'{model.__class__.__name__} Cross-Validation Scores')
+    plt.xlabel('Cross-Validation Splits')
+    plt.ylabel('R^2 Score')  # Adjust the label based on your evaluation metric
+    plt.show()
