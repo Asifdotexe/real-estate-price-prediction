@@ -57,5 +57,25 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="app.js"></script>
+    <script>
+        function onPageLoad() {
+            console.log("document loaded");
+            var url = "/api/get_locations"; // Use this if you are using nginx, i.e., tutorial 8 and onwards
+            $.get(url, function (data, status) {
+                console.log("got response for get_location_names request");
+                if (data) {
+                    var locations = data.locations;
+                    var uiLocations = document.getElementById("uiLocations");
+                    $('#uiLocations').empty();
+                    for (var i in locations) {
+                        var opt = new Option(locations[i]);
+                        $('#uiLocations').append(opt);
+                    }
+                }
+            });
+        }
+
+        window.onload = onPageLoad;
+    </script>
 </body>
 </html>
