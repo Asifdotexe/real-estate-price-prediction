@@ -1,11 +1,14 @@
 # Importing necessary libraries
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import util
 
 # Creating a Flask app instance
 app = Flask(__name__)
 
-# Endpoint for getting location names
+@app.route('/')
+def home():
+    return render_template('app.html')
+
 @app.route('/get_locations', methods=['GET'])
 def get_locations():
     # Retrieving location names using the utility function
