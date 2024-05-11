@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import json
 import numpy as np
+import sklearn
 
 # Load saved artifacts
 def load_saved_artifacts():
@@ -18,7 +19,9 @@ def load_saved_artifacts():
 
     # Load the trained model from a pickled file
     with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle', 'rb') as f:
+        print(__model)
         __model = pickle.load(f)
+        print(__model)
 
     print("Loading saved artifacts...done")
 
