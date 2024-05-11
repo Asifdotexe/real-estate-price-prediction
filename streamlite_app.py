@@ -10,14 +10,14 @@ def load_saved_artifacts():
     global __data_columns
 
     # Load data columns from JSON file
-    with open('../server/artifacts/columns.json', 'r') as f:
+    with open('../real-estate-price-prediction/server/artifacts/columns.json', 'r') as f:
         __data_columns = json.load(f)['data_columns']
         __locations = __data_columns[3:]
 
     global __model
 
     # Load the trained model from a pickled file
-    with open('../server/artifacts/hpp-lm.pickle', 'rb') as f:
+    with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle', 'rb') as f:
         __model = pickle.load(f)
 
     print("Loading saved artifacts...done")
