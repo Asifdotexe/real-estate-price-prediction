@@ -2,14 +2,7 @@ import streamlit as st
 import pickle
 import json
 import numpy as np
-# from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-# from sklearn.model_selection import ShuffleSplit
-# from sklearn.model_selection import cross_val_score
-# from sklearn.model_selection import GridSearchCV
-# from sklearn.linear_model import Lasso
-# from sklearn.tree import DecisionTreeRegressor
-import io
+import os
 
 # Load saved artifacts
 def load_saved_artifacts():
@@ -17,20 +10,32 @@ def load_saved_artifacts():
     global __locations
     global __data_columns
 
-    # Load data columns from JSON file
-    with open('../real-estate-price-prediction/server/artifacts/columns.json', 'r') as f:
-        __data_columns = json.load(f)['data_columns']
-        __locations = __data_columns[3:]
+    try:
+        # Load data columns from JSON file
+        columns_file_path = '../real-estate-price-prediction/server/artifacts/columns.json'
+        if os.path.exists(columns_file_path):
+            with open(columns_file_path, 'r') as f:
+                __data_columns = json.load(f)['data_columns']
+                __locations = __data_columns[3:]
+        else:
+            st.error("Error: Columns JSON file not found!")
+            return False
 
-    global __model
+        # Load the trained model from a pickled file
+        model_file_path = '../real-estate-price-prediction/server/artifacts/hpp-lm.pickle'
+        if os.path.exists(model_file_path):
+            with open(model_file_path, 'rb') as f:
+                __model = pickle.load(f)
+        else:
+            st.error("Error: Model pickle file not found!")
+            return False
 
-    # Load the trained model from a pickled file
-    with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle', 'rb') as f:
-        # print(__model)
-        __model = pickle.load(f)
-        # print(__model)
+        print("Loading saved artifacts...done")
+        return True
 
-    print("Loading saved artifacts...done")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+        return False
 
 # Variables to store location names, data columns, and the trained model
 __locations = None
@@ -61,7 +66,8 @@ def predict_home_price(total_sqft, location, bhk, bath):
 def main():
     st.title('Bangalore Home Price Prediction')
 
-    load_saved_artifacts()
+    if not load_saved_artifacts():
+        return
 
     # Select location
     st.subheader('Location')
@@ -87,4 +93,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
