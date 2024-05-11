@@ -2,13 +2,13 @@ import streamlit as st
 import pickle
 import json
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import ShuffleSplit
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model import Lasso
-from sklearn.tree import DecisionTreeRegressor
+# from sklearn.model_selection import train_test_split
+# from sklearn.linear_model import LinearRegression
+# from sklearn.model_selection import ShuffleSplit
+# from sklearn.model_selection import cross_val_score
+# from sklearn.model_selection import GridSearchCV
+# from sklearn.linear_model import Lasso
+# from sklearn.tree import DecisionTreeRegressor
 import io
 
 # Load saved artifacts
