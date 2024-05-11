@@ -2,7 +2,6 @@ import streamlit as st
 import pickle
 import json
 import numpy as np
-import sklearn
 
 # Load saved artifacts
 def load_saved_artifacts():
