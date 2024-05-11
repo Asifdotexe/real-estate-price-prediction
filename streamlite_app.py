@@ -2,7 +2,6 @@ import streamlit as st
 import pickle
 import json
 import numpy as np
-import requests
 
 # Load saved artifacts
 def load_saved_artifacts():
@@ -61,19 +60,19 @@ def main():
 
     # Input area (square feet)
     st.subheader('Area (Square Feet)')
-    total_sqft = st.text_input('Enter total square footage of the home', '1000')
+    total_sqft = st.number_input('Enter total square footage of the home', value=1000, min_value=100, step=50)
 
     # Input BHK
     st.subheader('BHK')
-    bhk = st.radio('Number of Bedrooms', ['1', '2', '3', '4', '5'], index=1)
+    bhk = st.selectbox('Number of Bedrooms', ['1', '2', '3', '4', '5'], index=1)
 
     # Input Bathrooms
     st.subheader('Bath')
-    bath = st.radio('Number of Bathrooms', ['1', '2', '3', '4', '5'], index=1)
+    bath = st.selectbox('Number of Bathrooms', ['1', '2', '3', '4', '5'], index=1)
 
     # Button to predict
     if st.button('Estimate Price'):
-        estimated_price = predict_home_price(float(total_sqft), selected_location, int(bhk), int(bath))
+        estimated_price = predict_home_price(total_sqft, selected_location, int(bhk), int(bath))
         st.success(f'Estimated Price: ₹{estimated_price}')
 
 if __name__ == '__main__':
