@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import json
 import numpy as np
+import sklearn
 
 # Load saved artifacts
 def load_saved_artifacts():
@@ -73,7 +74,7 @@ def main():
     # Button to predict
     if st.button('Estimate Price'):
         estimated_price = predict_home_price(total_sqft, selected_location, int(bhk), int(bath))
-        st.success(f'Estimated Price: ₹{estimated_price}')
+        st.success(f'Estimated Price: ₹{estimated_price}L')
 
 if __name__ == '__main__':
     main()
