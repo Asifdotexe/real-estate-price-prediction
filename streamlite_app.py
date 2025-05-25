@@ -95,6 +95,7 @@ def main():
     st.set_page_config(page_title='House Price Prediction',
                        page_icon='🏠',
                        layout='centered')
+
     st.title('🏠 Bangalore Home Price Predictor')
     st.caption("🔍 Predict the estimated price of a home in Bangalore based on its features.")
 
@@ -154,6 +155,35 @@ def main():
         st.success("✅ Prediction Successful!")
         st.metric(label="🏷️ Estimated Home Price",
                   value=f"₹ {estimated_price} Lakh")
+
+    # 👉 Add expander after title
+    with st.expander("ℹ️ How this Works"):
+        st.markdown("""
+            This app uses a **Linear Regression model** trained on real Bangalore housing data.
+
+            🔍 **Input Features**:
+            - **Square Footage**
+            - **Number of Bedrooms (BHK)**
+            - **Number of Bathrooms**
+            - **Location** (One-hot encoded)
+
+            📈 The model learns how these features relate to property prices based on historical data.
+
+            ⚠️ Note: This is a general estimate and may not reflect recent market changes or unique property features.
+
+            ---
+
+            👨‍💻 **About the Developer**
+
+            This tool was developed by **Asif Sayyed**, 
+            I am a Data Scientist passionate about building intelligent, 
+            user-friendly tools that turn data into insights.
+
+            🔗 [GitHub](https://github.com/Asifdotexe)  
+            📬 [LinkedIn](https://www.linkedin.com/in/sayyedasif)  
+            ✉️ [Email](mailto:asifdotexe@gmail.com)
+        """)
+
 
 if __name__ == '__main__':
     main()
