@@ -1,4 +1,5 @@
 import re
+import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
@@ -12,7 +13,7 @@ def convert_sqft(value: str) -> float | None:
     Returns:
         float | None: Converted area in square feet, or None if unconvertible.
     """
-    # Non string or empty inputs can't be processed meaningfully.
+    # Non-string or empty inputs can't be processed meaningfully.
     if not isinstance(value, str) or not value.strip():
         return None
 
@@ -71,6 +72,53 @@ def convert_sqft(value: str) -> float | None:
 
     # If no unit matched, assume it is already in sqft.
     return numeric_value
+
+def remove_bhk_outliers(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove outlier rows where a higher BHK apartment is priced less per square foot
+    than the average price per square foot of a lower BHK apartment in the same location
+
+    Why is this needed?
+        In most reasonable markets, a 3 BHK flat should not be cheaper (per sqft)
+        than a 2 BHK in the same locality, unless it's an anomaly.
+        This rule helps filter out such inconsistencies that could hurt model accuracy.
+
+    Args:
+        df: Dataframe with 'location', 'bhk', 'price_per_sqft' columns
+
+    Returns:
+        pd.Dataframe: DataFrame with outlier row removed
+    """
+    indices_to_exclude = np.array([], dtype=int)
+
+    for location in df['location'].unique():
+        location_df = df[df['location'] == location]
+        bhk_price_stats: dict[int, dict[str, float]] = {}
+
+        # calculate the mean and standard deviation of price per sqft
+        # for each BHK level in this location.
+        for bhk_level in location_df['bhk'].unique():
+            bhk_df = location_df[location_df['bhk'] == bhk_level]
+            bhk_price_stats[bhk_level] = {
+                'mean': bhk_df['price_per_sqft'].mean(),
+                'std': bhk_df['price_per_sqft'].std()
+            }
+
+        # if a higher BHK flat is priced lower than the average of the next lower BHK,
+        # it's probably an outlier unless it's backed by sufficient data.
+        for bhk_level in location_df['bhk'].unique():
+            lower_bhk_level = bhk_level - 1
+            if lower_bhk_level in bhk_price_stats:
+                lower_bhk_mean = bhk_price_stats[lower_bhk_level]['mean']
+                current_bhk_df = location_df[location_df['bhk'] == bhk_level]
+
+                if not np.isnan(lower_bhk_level) and len(current_bhk_df) > 5:
+                    outlier_indices = current_bhk_df[
+                        current_bhk_df['price_per_sqft'] < lower_bhk_mean
+                    ].index.values
+
+                    indices_to_exclude = np.concatenate((indices_to_exclude,
+                                                         outlier_indices))
+    return df.drop(indices_to_exclude.astype(int), axis='index')
 
 def check_imbalance(df, class_column='class'):
     no_of_true = len(df.loc[df[class_column] == True])
