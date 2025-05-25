@@ -1,9 +1,76 @@
+import re
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
+
+def convert_sqft(value: str) -> float | None:
+    """Convert various area representations to square feet
+
+    Args:
+        value (str): Area string, possibly a range or with units.
+
+    Returns:
+        float | None: Converted area in square feet, or None if unconvertible.
+    """
+    # Non string or empty inputs can't be processed meaningfully.
+    if not isinstance(value, str) or not value.strip():
+        return None
+
+    value = value.strip()
+
+    # If the value is a range like "2100 - 2850",
+    # we approximate by averaging the two numbers
+    if '-' in value:
+        tokens = value.strip('-')
+        if len(tokens) == 2:
+            first = float(tokens[0].strip())
+            second = float(tokens[1].strip())
+            return (first + second) / 2
+
+    # Extract the first numeric part to interpret the value, even if it includes a unit.
+    numeric_match = re.match(r"([\d\.]+)", value)
+    if not numeric_match:
+        # If there is no number, we cannot proceed with conversions.
+        return None
+
+    try:
+        # Defensive check in case float conversion fails
+        numeric_value = float(numeric_match.group(1))
+    except ValueError:
+        return None
+
+    value_lower = value.lower()
+
+    # Define unit to sqft conversion mapping
+    unit_to_sqft = {
+        'sq. meter': 10.7639,
+        'sq meter': 10.7639,
+        'sqm': 10.7639,
+        'sq. yard': 9,
+        'sq yards': 9,
+        'sq yard': 9,
+        # fallback for less specific yard mentions
+        'yard': 9,
+        'acre': 45560,
+        'ground': 2400,
+        'guntha': 1089,
+        'cent': 439.6,
+        # fallback for less specific meter mentions
+        'meter': 10.7639
+    }
+
+    # Checking if any known unit is in the string and convert accordingly
+    for unit, factor in unit_to_sqft.items():
+        if unit in value_lower:
+            return numeric_value * factor
+
+    # Handling 'perch' specifically (damn this was confusing).
+    # Skip conversion as it's unclear
+    if 'perch' in value_lower:
+        return None
+
+    # If no unit matched, assume it is already in sqft.
+    return numeric_value
 
 def check_imbalance(df, class_column='class'):
     no_of_true = len(df.loc[df[class_column] == True])
