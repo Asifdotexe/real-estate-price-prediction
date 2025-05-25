@@ -120,6 +120,68 @@ def remove_bhk_outliers(df: pd.DataFrame) -> pd.DataFrame:
                                                          outlier_indices))
     return df.drop(indices_to_exclude.astype(int), axis='index')
 
+def clean_and_cluster_locations(df: pd.DataFrame,
+                                location_col: str = 'location') -> pd.DataFrame:
+    """
+    Clean and cluster location data in a DataFrame.
+
+    This function standardizes the formatting of location names, removes duplicate entries,
+    and assigns each location to a geographic zone (East, West, South, North, Central) using exact matching.
+    Locations that do not match any predefined zone are categorized under 'Other'.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing location data.
+        location_col (str): The name of the column in `df` that contains the location names.
+
+    Returns:
+        pd.DataFrame: A cleaned and enriched DataFrame with an additional 'zone' column.
+    """
+
+    # Why: It's important to standardize the formatting to ensure consistency across names
+    # (e.g., 'whitefield', ' WhiteField ', and 'Whitefield' should be treated the same).
+    df[location_col] = (
+        df[location_col]
+        .astype(str)  # Ensure all entries are strings
+        .str.strip()  # Remove leading/trailing spaces
+        .str.replace(r'\s+', ' ',
+                     regex=True)  # Collapse multiple spaces into one
+        .str.title()
+    # Capitalize appropriately (e.g., 'jp nagar' -> 'Jp Nagar')
+    )
+
+    # Why: Duplicate entries waste space and can bias analysis, so we keep only the first unique one.
+    df = df.drop_duplicates(subset=[location_col]).reset_index(drop=True)
+
+    # Why: We want to enrich the dataset by grouping each location into a broader zone.
+    # This helps with regional analysis and insights without manually checking each locality.
+    predefined_zone_map = {
+        "East": ['Whitefield', 'Kr Puram', 'Marathahalli', 'Kadugodi', 'Itpl',
+                 'Brookefield', 'Hoodi', 'Ramamurthy Nagar', 'Mahadevpura'],
+        "West": ['Rajaji Nagar', 'Vijayanagar', 'Magadi Road', 'Malleswaram',
+                 'Nagarbhavi', 'Basaveshwaranagar', 'Chandra Layout'],
+        "South": ['Jp Nagar', 'Jayanagar', 'Banashankari', 'Kanakapura Road',
+                  'Bannerghatta Road', 'Btm Layout', 'Electronic City',
+                  'Arekere', 'Hulimavu'],
+        "North": ['Yelahanka', 'Hebbal', 'Jakkur', 'Sahakara Nagar',
+                  'Nagavara', 'Rt Nagar', 'Kodigehalli'],
+        "Central": ['Mg Road', 'Ulsoor', 'Richmond Town', 'Frazer Town',
+                    'Shivajinagar', 'Indiranagar', 'Koramangala']
+    }
+
+    # Why: By flattening the zone dictionary, we create a simple lookup for efficient mapping.
+    # This avoids having to loop over nested lists or write complex matching logic.
+    area_to_zone_map = {
+        locality: zone
+        for zone, localities in predefined_zone_map.items()
+        for locality in localities
+    }
+
+    # Why: Assigning zones directly by map ensures clean logic, and fallback to 'Other' captures everything else.
+    df['zone'] = df[location_col].map(area_to_zone_map).fillna('Other')
+
+    return df
+
+
 def check_imbalance(df, class_column='class'):
     no_of_true = len(df.loc[df[class_column] == True])
     no_of_false = len(df.loc[df[class_column] == False])
