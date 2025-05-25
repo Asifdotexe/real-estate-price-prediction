@@ -1,9 +1,16 @@
+"""
+Streamlit Application for House Price Predictor
+"""
+
 import pickle
 import json
 from typing import Any
 
 import streamlit as st
 import numpy as np
+
+from python.config import (FEATURE_VECTOR, PICKLED_MODEL, MIN_SQFT, MAX_SQFT,
+                           DEFAULT_SQFT_VALUE, MAX_BATH_COUNT, MAX_BHK_COUNT)
 
 
 # Cache the model and metadata loading
@@ -20,13 +27,11 @@ def load_model_and_metadata() -> tuple[Any, list[str], list[str]]:
         cleaner and more modular.
     """
     # reading the file which contains the features the model was trained on
-    with open(
-            '../real-estate-price-prediction/server/artifacts/columns.json') as f:
+    with open(FEATURE_VECTOR) as f:
         data_columns = json.load(f)['data_columns']
 
     # reading the file containing the pre-trained model
-    with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle',
-              'rb') as f:
+    with open(PICKLED_MODEL, 'rb') as f:
         model = pickle.load(f)
 
     # the first 3 columns are numerical features (sqft, bathroom, bhk) and the rest are locations
@@ -118,7 +123,7 @@ def main():
 
             bhk = st.selectbox(
                 '🛏️ Number of Bedrooms (BHK)',
-                list(range(1,6)),
+                list(range(1,MAX_BHK_COUNT)),
                 index=1,
                 help='Select how many bedrooms the property has.'
             )
@@ -126,16 +131,16 @@ def main():
         with sqft_bath_column:
             total_sqft = st.number_input(
                 '📐 Total Area (in Square Feet)',
-                min_value = 100,
-                max_value = 10_000,
-                value= 1_000,
+                min_value = MIN_SQFT,
+                max_value = MAX_SQFT,
+                value= DEFAULT_SQFT_VALUE,
                 step= 50,
                 help='Enter the total built-up area of the home.'
             )
 
             bath = st.selectbox(
                 '🛁 Number of Bathrooms',
-                list(range(1,6)),
+                list(range(1,MAX_BATH_COUNT)),
                 index=1,
                 help='Choose how many bathrooms are available in the property.'
             )
@@ -155,35 +160,6 @@ def main():
         st.success("✅ Prediction Successful!")
         st.metric(label="🏷️ Estimated Home Price",
                   value=f"₹ {estimated_price} Lakh")
-
-    # 👉 Add expander after title
-    with st.expander("ℹ️ How this Works"):
-        st.markdown("""
-            This app uses a **Linear Regression model** trained on real Bangalore housing data.
-
-            🔍 **Input Features**:
-            - **Square Footage**
-            - **Number of Bedrooms (BHK)**
-            - **Number of Bathrooms**
-            - **Location** (One-hot encoded)
-
-            📈 The model learns how these features relate to property prices based on historical data.
-
-            ⚠️ Note: This is a general estimate and may not reflect recent market changes or unique property features.
-
-            ---
-
-            👨‍💻 **About the Developer**
-
-            This tool was developed by **Asif Sayyed**, 
-            I am a Data Scientist passionate about building intelligent, 
-            user-friendly tools that turn data into insights.
-
-            🔗 [GitHub](https://github.com/Asifdotexe)  
-            📬 [LinkedIn](https://www.linkedin.com/in/sayyedasif)  
-            ✉️ [Email](mailto:asifdotexe@gmail.com)
-        """)
-
 
 if __name__ == '__main__':
     main()
