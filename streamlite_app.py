@@ -1,83 +1,75 @@
-import streamlit as st
 import pickle
 import json
+from typing import Any
+
+import streamlit as st
 import numpy as np
-import io
 
-# Load saved artifacts
-def load_saved_artifacts():
-    print("Loading saved artifacts...start")
-    global __locations
-    global __data_columns
 
-    # Load data columns from JSON file
-    with open('../real-estate-price-prediction/server/artifacts/columns.json', 'r') as f:
-        __data_columns = json.load(f)['data_columns']
-        __locations = __data_columns[3:]
+# Cache the model and metadata loading
+@st.cache_resource
+def load_model_and_metadata() -> tuple[Any, list[str], list[str]]:
+    """Loads the trained machine learning model and associated metadata
+    needed for making predictions.
 
-    global __model
+    Why is this function needed?
+        To avoid repeatedly loading large files everytime the streamlit app reruns,
+        which would slow down the user experience.
+        We use Streamlit's `st.cache_resource` to cache this loading step
+        and improve performance. Separating this logic also keeps our main code
+        cleaner and more modular.
+    """
+    # reading the file which contains the features the model was trained on
+    with open('../real-estate-price-prediction/server/artifacts/columns.json') as f:
+        data_columns = json.load(f)['data_columns']
 
-    # Load the trained model from a pickled file
+    # reading the file containing the pre-trained model
     with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle', 'rb') as f:
-        # print(__model)
-        __model = pickle.load(f)
-        # print(__model)
+        model = pickle.load(f)
 
-    print("Loading saved artifacts...done")
+    # the first 3 columns are numerical features (sqft, bathroom, bhk) and the rest are locations
+    locations = data_columns[3:]
 
-# Variables to store location names, data columns, and the trained model
-__locations = None
-__data_columns = None
-__model = None
-
-# Function to get locations
-def get_locations():
-    return __locations
+    return model, data_columns, locations
 
 # Function to predict home price
-def predict_home_price(total_sqft, location, bhk, bath):
+def predict_home_price(model, data_columns, total_sqft, location, bhk, bath):
     try:
-        loc_index = __data_columns.index(location.lower())
+        loc_index = data_columns.index(location.lower())
     except ValueError:
         loc_index = -1
 
-    x = np.zeros(len(__data_columns))
+    x = np.zeros(len(data_columns))
     x[0] = total_sqft
     x[1] = bath
     x[2] = bhk
     if loc_index >= 0:
         x[loc_index] = 1
 
-    return round(__model.predict([x])[0], 2)
+    return round(model.predict([x])[0], 2)
 
 # Streamlit app
 def main():
-    st.title('Bangalore Home Price Prediction')
+    st.title('🏠 Bangalore Home Price Prediction')
 
-    load_saved_artifacts()
+    model, data_columns, locations = load_model_and_metadata()
 
     # Select location
-    st.subheader('Location')
-    locations = get_locations()
-    selected_location = st.selectbox('Choose a Location', locations)
+    location = st.selectbox('📍 Choose a Location', locations)
 
     # Input area (square feet)
-    st.subheader('Area (Square Feet)')
-    total_sqft = st.number_input('Enter total square footage of the home', value=1000, min_value=100, step=50)
+    total_sqft = st.number_input('📏 Enter total square footage of the home', value=1000, min_value=100, step=50)
 
     # Input BHK
-    st.subheader('BHK')
-    bhk = st.selectbox('Number of Bedrooms', ['1', '2', '3', '4', '5'], index=1)
+    bhk = st.selectbox('🛏️ Number of Bedrooms (BHK)', list(range(1, 6)), index=1)
 
     # Input Bathrooms
-    st.subheader('Bath')
-    bath = st.selectbox('Number of Bathrooms', ['1', '2', '3', '4', '5'], index=1)
+    bath = st.selectbox('🛁 Number of Bathrooms', list(range(1, 6)), index=1)
 
     # Button to predict
-    if st.button('Estimate Price'):
-        estimated_price = predict_home_price(total_sqft, selected_location, int(bhk), int(bath))
-        st.success(f'Estimated Price: ₹{estimated_price}L')
+    if st.button('Estimate Price 💰'):
+        estimated_price = predict_home_price(model, data_columns, total_sqft, location, bhk, bath)
+        st.success(f'Estimated Price: ₹{estimated_price} Lakh')
 
 if __name__ == '__main__':
     main()
-    
