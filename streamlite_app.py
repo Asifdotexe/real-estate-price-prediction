@@ -88,32 +88,72 @@ def predict_home_price(
     return round(prediction,2)
 
 
-# Streamlit app
-def main():
-    st.title('🏠 Bangalore Home Price Prediction')
+### STREAMLIT APP STARTS HERE
 
+def main():
+    # header section
+    st.set_page_config(page_title='House Price Prediction',
+                       page_icon='🏠',
+                       layout='centered')
+    st.title('🏠 Bangalore Home Price Predictor')
+    st.caption("🔍 Predict the estimated price of a home in Bangalore based on its features.")
+
+    # Load model and metadata only once
     model, data_columns, locations = load_model_and_metadata()
 
-    # Select location
-    location = st.selectbox('📍 Choose a Location', locations)
+    # Use a form to group input and avoid auto-refresh on every interaction
+    with st.form('prediction_form'):
+        st.markdown('### 📋 Property Details')
 
-    # Input area (square feet)
-    total_sqft = st.number_input('📏 Enter total square footage of the home',
-                                 value=1000, min_value=100, step=50)
+        # Two-column layout for compact input view
+        location_bhk_column, sqft_bath_column = st.columns(2)
 
-    # Input BHK
-    bhk = st.selectbox('🛏️ Number of Bedrooms (BHK)', list(range(1, 6)),
-                       index=1)
+        with location_bhk_column:
+            location = st.selectbox(
+                '📍 Select Location',
+                locations,
+                help='Choose the location where the property is located.'
+            )
 
-    # Input Bathrooms
-    bath = st.selectbox('🛁 Number of Bathrooms', list(range(1, 6)), index=1)
+            bhk = st.selectbox(
+                '🛏️ Number of Bedrooms (BHK)',
+                list(range(1,6)),
+                index=1,
+                help='Select how many bedrooms the property has.'
+            )
 
-    # Button to predict
-    if st.button('Estimate Price 💰'):
+        with sqft_bath_column:
+            total_sqft = st.number_input(
+                '📐 Total Area (in Square Feet)',
+                min_value = 100,
+                max_value = 10_000,
+                value= 1_000,
+                step= 50,
+                help='Enter the total built-up area of the home.'
+            )
+
+            bath = st.selectbox(
+                '🛁 Number of Bathrooms',
+                list(range(1,6)),
+                index=1,
+                help='Choose how many bathrooms are available in the property.'
+            )
+
+        st.markdown("💡 *Ensure values are realistic for accurate predictions.*")
+
+        submitted = st.form_submit_button("Estimate Price 💰")
+
+    if submitted:
+        # Validation: Warn if sqft too small for selected BHK
+        if bhk > total_sqft // 300:
+            st.warning("⚠️ The square footage seems too small for the number of bedrooms.")
+
         estimated_price = predict_home_price(model, data_columns, total_sqft,
                                              location, bhk, bath)
-        st.success(f'Estimated Price: ₹{estimated_price} Lakh')
 
+        st.success("✅ Prediction Successful!")
+        st.metric(label="🏷️ Estimated Home Price",
+                  value=f"₹ {estimated_price} Lakh")
 
 if __name__ == '__main__':
     main()
