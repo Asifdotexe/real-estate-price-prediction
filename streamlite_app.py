@@ -20,11 +20,13 @@ def load_model_and_metadata() -> tuple[Any, list[str], list[str]]:
         cleaner and more modular.
     """
     # reading the file which contains the features the model was trained on
-    with open('../real-estate-price-prediction/server/artifacts/columns.json') as f:
+    with open(
+            '../real-estate-price-prediction/server/artifacts/columns.json') as f:
         data_columns = json.load(f)['data_columns']
 
     # reading the file containing the pre-trained model
-    with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle', 'rb') as f:
+    with open('../real-estate-price-prediction/server/artifacts/hpp-lm.pickle',
+              'rb') as f:
         model = pickle.load(f)
 
     # the first 3 columns are numerical features (sqft, bathroom, bhk) and the rest are locations
@@ -32,21 +34,59 @@ def load_model_and_metadata() -> tuple[Any, list[str], list[str]]:
 
     return model, data_columns, locations
 
+
 # Function to predict home price
-def predict_home_price(model, data_columns, total_sqft, location, bhk, bath):
-    try:
-        loc_index = data_columns.index(location.lower())
-    except ValueError:
-        loc_index = -1
+def predict_home_price(
+        model: Any,
+        data_columns: list[str],
+        total_sqft: float,
+        location: str,
+        bhk: int,
+        bath: int
+) -> float:
+    """Predicts the price of a house on user input and trained model.
 
-    x = np.zeros(len(data_columns))
-    x[0] = total_sqft
-    x[1] = bath
-    x[2] = bhk
-    if loc_index >= 0:
-        x[loc_index] = 1
+    Args:
+        model: The pre-trained model for price prediction
+        data_columns: List of feature names the model expects,
+        including encodings.
+        total_sqft: Total area of the property in square feet.
+        location: Location of the property selected by the user.
+        bhk: Number of bedrooms (BHK) in the property.
+        bath: Number of bathrooms in the property.
 
-    return round(model.predict([x])[0], 2)
+    Returns:
+        Predicted price of the property, rounded to two decimal prices (in Lakhs).
+
+    """
+
+    # the model expects an input array where the first few indices represent
+    # numeric features (total_sqft, bath, bhk),
+    # and the rest are one-hot encoded location names
+    input_vector = np.zeros(len(data_columns))
+
+    # setting values for total_sqft, bath and bhk.
+    # These are fixed columns always expected at the beginning of the feature list.
+    input_vector[0] = total_sqft
+    input_vector[1] = bath
+    input_vector[2] = bhk
+
+    # Location handling
+    # Not all user-selected location may be present in the model's training data
+    # if it's present, we one-hot encode it by setting the corresponding index to 1
+    location = location.lower().strip()
+    if location in data_columns:
+        location_index = data_columns.index(location)
+        input_vector[location_index] = 1
+    # NOTE:
+    # If the location is unknown,
+    # we intentionally skip setting any one-hot encoded location.
+    # the model will still make a prediction based on other inputs
+    # (not ideal but functional).
+
+    prediction = model.predict([input_vector])[0]
+    return round(prediction,2)
+
 
 # Streamlit app
 def main():
@@ -58,18 +98,22 @@ def main():
     location = st.selectbox('📍 Choose a Location', locations)
 
     # Input area (square feet)
-    total_sqft = st.number_input('📏 Enter total square footage of the home', value=1000, min_value=100, step=50)
+    total_sqft = st.number_input('📏 Enter total square footage of the home',
+                                 value=1000, min_value=100, step=50)
 
     # Input BHK
-    bhk = st.selectbox('🛏️ Number of Bedrooms (BHK)', list(range(1, 6)), index=1)
+    bhk = st.selectbox('🛏️ Number of Bedrooms (BHK)', list(range(1, 6)),
+                       index=1)
 
     # Input Bathrooms
     bath = st.selectbox('🛁 Number of Bathrooms', list(range(1, 6)), index=1)
 
     # Button to predict
     if st.button('Estimate Price 💰'):
-        estimated_price = predict_home_price(model, data_columns, total_sqft, location, bhk, bath)
+        estimated_price = predict_home_price(model, data_columns, total_sqft,
+                                             location, bhk, bath)
         st.success(f'Estimated Price: ₹{estimated_price} Lakh')
+
 
 if __name__ == '__main__':
     main()
