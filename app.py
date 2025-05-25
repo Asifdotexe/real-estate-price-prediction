@@ -9,8 +9,8 @@ from typing import Any
 import streamlit as st
 import numpy as np
 
-from python.config import (FEATURE_VECTOR, PICKLED_MODEL, MIN_SQFT, MAX_SQFT,
-                           DEFAULT_SQFT_VALUE, MAX_BATH_COUNT, MAX_BHK_COUNT)
+from python.src.config import (FEATURE_VECTOR, PICKLED_MODEL, MIN_SQFT, MAX_SQFT,
+                               DEFAULT_SQFT_VALUE, MAX_BATH_COUNT, MAX_BHK_COUNT)
 
 
 # Cache the model and metadata loading
