@@ -52,10 +52,10 @@ def convert_sqft(value: str) -> float | None:
         'sq yard': 9,
         # fallback for less specific yard mentions
         'yard': 9,
-        'acre': 45560,
+        'acre': 43560,
         'ground': 2400,
         'guntha': 1089,
-        'cent': 439.6,
+        'cent': 435.6,
         # fallback for less specific meter mentions
         'meter': 10.7639
     }
