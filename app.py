@@ -9,22 +9,19 @@ from typing import Any
 import streamlit as st
 import numpy as np
 
-from python.src.config import (FEATURE_VECTOR, PICKLED_MODEL, MIN_SQFT, MAX_SQFT,
-                               DEFAULT_SQFT_VALUE, MAX_BATH_COUNT, MAX_BHK_COUNT)
+from python.src.config import (FEATURE_VECTOR, PICKLED_MODEL, MIN_SQFT, MAX_SQFT, DEFAULT_SQFT_VALUE,
+                               MAX_BATH_COUNT, MAX_BHK_COUNT)
 
 
 # Cache the model and metadata loading
 @st.cache_resource
 def load_model_and_metadata() -> tuple[Any, list[str], list[str]]:
-    """Loads the trained machine learning model and associated metadata
-    needed for making predictions.
+    """Loads the trained machine learning model and associated metadata needed for making predictions.
 
     Why is this function needed?
-        To avoid repeatedly loading large files everytime the streamlit app reruns,
-        which would slow down the user experience.
-        We use Streamlit's `st.cache_resource` to cache this loading step
-        and improve performance. Separating this logic also keeps our main code
-        cleaner and more modular.
+        To avoid repeatedly loading large files everytime the streamlit app reruns, which would slow down the user experience.
+        We use Streamlit's `st.cache_resource` to cache this loading step and improve performance.
+        Separating this logic also keeps our main code cleaner and more modular.
     """
     # reading the file which contains the features the model was trained on
     with open(FEATURE_VECTOR) as f:

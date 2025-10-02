@@ -1,0 +1,30 @@
+[project]
+name = "real-estate-price-prediction"
+version = "2.0.0"
+description = "Real estate price prediction model for Bangalore houses"
+authors = [
+    {name = "Asif Sayyed",email = "asifdotexe@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "streamlit (==1.45.1)",
+    "numpy (==2.2.6)",
+    "seaborn (==0.13.2)",
+    "scikit-learn (==1.6.1)",
+    "pandas (==2.2.3)",
+    "optuna (==4.3.0)",
+    "xgboost (==3.0.2)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pylint = "3.3.8"
+jupyter = "^1.1.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
