@@ -2,12 +2,12 @@
 Streamlit Application for House Price Predictor
 """
 
-import pickle
 import json
+import pickle
 from typing import Any
 
-import streamlit as st
 import numpy as np
+import streamlit as st
 
 from python.src.config import (FEATURE_VECTOR, PICKLED_MODEL, MIN_SQFT, MAX_SQFT, DEFAULT_SQFT_VALUE,
                                MAX_BATH_COUNT, MAX_BHK_COUNT)
@@ -120,7 +120,7 @@ def main():
 
             bhk = st.selectbox(
                 '🛏️ Number of Bedrooms (BHK)',
-                list(range(1,MAX_BHK_COUNT)),
+                list(range(1,MAX_BHK_COUNT + 1)),
                 index=1,
                 help='Select how many bedrooms the property has.'
             )
@@ -137,7 +137,7 @@ def main():
 
             bath = st.selectbox(
                 '🛁 Number of Bathrooms',
-                list(range(1,MAX_BATH_COUNT)),
+                list(range(1,MAX_BATH_COUNT + 1)),
                 index=1,
                 help='Choose how many bathrooms are available in the property.'
             )
