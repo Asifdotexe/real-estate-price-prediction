@@ -5,8 +5,8 @@ Contains all the constants.
 ##==== app.py ====##
 
 # Path to the feature vectors and pickled model
-FEATURE_VECTOR = '../real-estate-price-prediction/data/final/columns.json'
-PICKLED_MODEL = '../real-estate-price-prediction/data/final/hpp-lm.pickle'
+FEATURE_VECTOR = "../real-estate-price-prediction/data/final/columns.json"
+PICKLED_MODEL = "../real-estate-price-prediction/data/final/hpp-lm.pickle"
 
 # Fixed sqft parameters
 MIN_SQFT = 100
