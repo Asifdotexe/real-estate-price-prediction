@@ -1,8 +1,6 @@
 import re
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
-from sklearn.ensemble import RandomForestClassifier
 
 def convert_sqft(value: str) -> float | None:
     """Convert various area representations to square feet
